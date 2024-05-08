@@ -40,8 +40,8 @@ void graphics::timerEvent(QTimerEvent *){
     if(mapmode){
         view.applysecondnewtonlaw(K);
         view.move(K);
-    }b.setcoords(body->GetPosition().x, body->GetPosition().y);
-
+    }
+    b.setcoords(body->GetPosition().x, body->GetPosition().y);
     setway(b.getcoords().X, b.getcoords().Y);
 
     if(getballroom().finish()){
@@ -60,8 +60,6 @@ void graphics::initializeGL(){
     float pos[4] = {0,0,10,1};
     float dir[3] = {0,0,0};
 
-    std::cout << "WTF!?\n";
-
     qglClearColor(Qt::black);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_COLOR_MATERIAL);
@@ -73,7 +71,6 @@ void graphics::initializeGL(){
 
     genTextures();
     glEnable(GL_TEXTURE_2D);
-    //getTextureArray();
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -98,11 +95,16 @@ void graphics::initializeGL(){
     bodyDef.linearDamping = 3.3f; //emulation of air resistanse
     bodyDef.position.Set(b.getcoords().X, b.getcoords().Y);
     body = world->CreateBody(&bodyDef);
+    b2MassData mass;
+    mass.center = b2Vec2_zero;
+    mass.mass = 1;
+    mass.I = 0.0125f;
+    body->SetMassData(&mass);
     b2CircleShape dynamicCircle;
     dynamicCircle.m_radius = 0.1f;
     b2FixtureDef fixtureDef;
     fixtureDef.shape = &dynamicCircle;
-    fixtureDef.density = 0.8f;
+    fixtureDef.density = 0.0f;
     fixtureDef.restitution = 0.6f;
     fixtureDef.friction = 0.f;
     body->CreateFixture(&fixtureDef);
@@ -111,11 +113,12 @@ void graphics::initializeGL(){
         for(int j = 0; j < labirint::width; j++){
             room r = getroom(i, j);
             float __x = r.getcoords().X, __y = r.getcoords().Y;
+            b2Body *_body;
             if(!r.down()){
                 b2BodyDef _bodyDef;
                 _bodyDef.type = b2_staticBody;
                 _bodyDef.position.Set(__x+0.5f, __y);
-                b2Body *_body = world->CreateBody(&_bodyDef);
+                _body = world->CreateBody(&_bodyDef);
                 b2PolygonShape _dynamicCircle;
                 _dynamicCircle.SetAsBox(0.5f, 0.1f);
                 b2FixtureDef _fixtureDef;
@@ -126,7 +129,7 @@ void graphics::initializeGL(){
                 b2BodyDef _bodyDef;
                 _bodyDef.type = b2_staticBody;
                 _bodyDef.position.Set(__x, __y+0.5);
-                b2Body *_body = world->CreateBody(&_bodyDef);
+                _body = world->CreateBody(&_bodyDef);
                 b2PolygonShape _dynamicCircle;
                 _dynamicCircle.SetAsBox(0.1f, 0.5f);
                 b2FixtureDef _fixtureDef;
@@ -137,7 +140,7 @@ void graphics::initializeGL(){
                 b2BodyDef _bodyDef;
                 _bodyDef.type = b2_staticBody;
                 _bodyDef.position.Set(__x+0.5f, __y+1.f);
-                b2Body *_body = world->CreateBody(&_bodyDef);
+                _body = world->CreateBody(&_bodyDef);
                 b2PolygonShape _dynamicCircle;
                 _dynamicCircle.SetAsBox(0.5f, 0.1f);
                 b2FixtureDef _fixtureDef;
@@ -148,7 +151,7 @@ void graphics::initializeGL(){
                 b2BodyDef _bodyDef;
                 _bodyDef.type = b2_staticBody;
                 _bodyDef.position.Set(__x+1.f, __y+0.5);
-                b2Body *_body = world->CreateBody(&_bodyDef);
+                _body = world->CreateBody(&_bodyDef);
                 b2PolygonShape _dynamicCircle;
                 _dynamicCircle.SetAsBox(0.1f, 0.5f);
                 b2FixtureDef _fixtureDef;
@@ -156,11 +159,10 @@ void graphics::initializeGL(){
                 _fixtureDef.friction = 0.f;
                 _body->CreateFixture(&_fixtureDef);
             }
+
+            _body->SetMassData(&mass);
         }
     }
-
-
-    //setCursor(QCursor(Qt::BlankCursor));
     QCursor::setPos(mW/2, mH/2);
 }
 
@@ -211,7 +213,7 @@ void graphics::resizeGL(int width, int height){
     gluLookAt(x, y, h,
               x, y, 0,
               0, 1, 0);
-    //camera position, camera look-point, vector which normal with "web-cam-line" (i mean - monito-up-line);
+    //camera position, camera look-point, vector which normal with "web-cam-line"
 }
 
 void graphics::paintGL(){
@@ -220,8 +222,6 @@ void graphics::paintGL(){
     glPushMatrix();
 
     int k = (mapmode) ? 11 : 6;
-    /*if(mapmode == 3)
-        std::cerr << "FUCK IT!" << std::endl;*/
     std::pair<unsigned, unsigned> _i(_max((unsigned)b.getcoords().X - k, 0),
                          _min(labirint::width, (unsigned)((mapmode) ? view.getcoords().X : b.getcoords().X) + k)),
                                 _j(_max((unsigned)b.getcoords().Y - k, 0),
@@ -373,10 +373,6 @@ void graphics::__draw(unsigned _x, unsigned _y){
 void graphics::mouseMoveEvent(QMouseEvent *event){
     float dx = (event->globalX() - mW/2)/(float)(mW/2);
     float dy = (event->globalY() - mH/2)/(float)(mH/2);
-    //std::cerr << dx << " " << dy << std::endl;
-    //b.setforce(std::pair<float, float>(dx, -dy));
-
-    //QCursor::setPos(mW/2,mH/2);
 }
 
 #define POW 0.005

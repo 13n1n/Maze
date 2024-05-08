@@ -27,7 +27,7 @@ public:
     bool m_way;
 	room *__backroom;
 //public:
-    room(unsigned x, unsigned y);
+    room(unsigned=0, unsigned=0);
 	bool left();
 	bool right();
 	bool up();

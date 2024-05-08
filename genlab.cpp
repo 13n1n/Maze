@@ -8,7 +8,7 @@
 
 using std::pair;
 
-room::room(unsigned x = 0, unsigned y = 0){
+room::room(unsigned x, unsigned y){
     m_x = x;
     m_y = y;
     m_n = -1;
@@ -123,7 +123,7 @@ bool labirint::isItBall(unsigned x, unsigned y){
 }
 
 bool labirint::finished(){
-	return !((int)m_finish - (int)m_ball);
+    return (m_finish - m_ball) != 0;
 }
 
 room* labirint::__getroom(unsigned x, unsigned y){
